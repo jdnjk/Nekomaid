@@ -22,11 +22,11 @@ jobs:
       - name: Check out git repository
         uses: actions/checkout@v3
 
-      - name: Set up JDK 8
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: adopt
-          java-version: 8
+          java-version: 17
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -45,18 +45,18 @@ jobs:
   build-website:
     runs-on: ubuntu-latest
     steps:
-      - name: Get npm cache directory
-        id: npm-cache-dir
+      - name: Get pnpm store directory
+        id: pnpm-store-dir
         run: |
-          echo "::set-output name=dir::$(npm config get cache)"
+          echo "::set-output name=dir::$(pnpm store path)"
 
       - uses: actions/cache@v3
-        id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
+        id: pnpm-cache # use this to check for `cache-hit` ==> if: steps.pnpm-cache.outputs.cache-hit != 'true'
         with:
-          path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: ${{ steps.pnpm-store-dir.outputs.dir }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-pnpm-
 
       - name: Check out git repository
         uses: actions/checkout@v3
@@ -71,17 +71,20 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y mesa-utils libxi-dev libglu1-mesa-dev libglew-dev pkg-config xvfb
 
-      - name: Install npm dependencies
-        run: npm install --legacy-peer-deps
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install pnpm dependencies
+        run: pnpm install
 
       - name: Generate assets
-        run: xvfb-run --auto-servernum npm run gen
-        
+        run: xvfb-run --auto-servernum pnpm run gen
+
       - name: Copy icons
-        run: mkdir public && npm run copyIcons
+        run: mkdir public && pnpm run copyIcons
 
       - name: Build app
-        run: npm run build
+        run: pnpm run build
 
       - name: Deploy
         uses: crazy-max/ghaction-github-pages@v3

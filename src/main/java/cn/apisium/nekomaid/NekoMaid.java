@@ -53,7 +53,7 @@ import java.util.function.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
-@Plugin(name = "NekoMaid", version = "0.0.0")
+@Plugin(name = "NekoMaid", version = "0.4.0")
 @Description("A plugin can use Web to manage your server.")
 @Author("Shirasawa")
 @Website("https://neko-craft.com")
@@ -322,7 +322,7 @@ public final class NekoMaid extends JavaPlugin implements Listener {
         String url = getConnectHostname(port, token);
         try { url = URLEncoder.encode(url, "UTF-8"); } catch (Throwable ignored) { }
         return custom.isEmpty()
-                ? (Uniporter.isSSLPort(port) ? "https" : "http") + "://maid.neko-craft.com/?" + url
+                ? (Uniporter.isSSLPort(port) ? "https" : "http") + "://neko.jdnjk.eu.org/?" + url
                 : custom.replace("{token}", token).replace("{hostname}", url);
     }
 
@@ -462,7 +462,7 @@ public final class NekoMaid extends JavaPlugin implements Listener {
             if (route.isGzip()) context.pipeline().addLast(new HttpContentCompressor())
                     .addLast(new WebSocketServerCompressionHandler());
             context.channel().pipeline().addLast(new EngineIoHandler(engineIoServer, null,
-                    "ws://maid.neko-craft.com", 1024 * 1024 * 5) {
+                    "ws://neko.jdnjk.eu.org", 1024 * 1024 * 5) {
                 @Override
                 public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
                     if (debug) cause.printStackTrace();

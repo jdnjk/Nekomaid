@@ -2,9 +2,9 @@ package cn.apisium.nekomaid.builtin;
 
 import cn.apisium.nekomaid.NekoMaid;
 import cn.apisium.nekomaid.utils.Utils;
-import com.onarandombox.MultiverseCore.MultiverseCore;
-import com.onarandombox.MultiverseCore.api.MVWorldManager;
-import com.onarandombox.MultiverseCore.api.MultiverseWorld;
+import org.mvplugins.multiverse.core.MultiverseCoreApi;
+import org.mvplugins.multiverse.core.world.WorldManager;
+import org.mvplugins.multiverse.core.world.MultiverseWorld;
 import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.event.Event;
@@ -99,9 +99,11 @@ final class Worlds {
                 main.getServer().getScheduler().runTask(main, () -> {
                     world.setDifficulty(diff);
                     if (mv != null) try {
-                        MVWorldManager wm = ((MultiverseCore) mv).getMVWorldManager();
-                        wm.getMVWorld(world).setPropertyValue("difficulty", value);
-                        ((MultiverseCore) mv).getMVWorldManager().saveWorldsConfig();
+                        WorldManager wm = ((MultiverseCoreApi) mv).getWorldManager();
+                        wm.getWorld(world).forEach(mw -> {
+                            mw.setDifficulty(Difficulty.valueOf(value));
+                            wm.saveWorldsConfig().onFailure(Throwable::printStackTrace);
+                        });
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }
@@ -114,9 +116,10 @@ final class Worlds {
                 main.getServer().getScheduler().runTask(main, () -> {
                     world.setPVP(value);
                     if (mv != null) try {
-                        MVWorldManager wm = ((MultiverseCore) mv).getMVWorldManager();
-                        wm.getMVWorld(world).setPropertyValue("pvp", String.valueOf(value));
-                        ((MultiverseCore) mv).getMVWorldManager().saveWorldsConfig();
+                        WorldManager wm = ((MultiverseCoreApi) mv).getWorldManager();
+                        wm.getWorld(world).forEach(mw -> {
+                            mw.setPvp(value);
+                            wm.saveWorldsConfig().onFailure(Throwable::printStackTrace);});
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }
@@ -135,15 +138,29 @@ final class Worlds {
                 main.getServer().getScheduler().runTask(main, world::save);
             });
             if (mv != null) {
-                MVWorldManager wm = ((MultiverseCore) mv).getMVWorldManager();
+                MultiverseCoreApi api = (MultiverseCoreApi) mv;
+                WorldManager wm = api.getWorldManager();
                 client.onWithAck("worlds:set", args -> {
                     org.bukkit.World world = main.getServer().getWorld(UUID.fromString((String) args[0]));
                     if (world == null) return;
                     main.getServer().getScheduler().runTask(main, () -> {
                         try {
-                            wm.getMVWorld(world).setPropertyValue((String) args[1], (String) args[2]);
-                            update();
-                            wm.saveWorldsConfig();
+                            wm.getWorld(world.getName()).forEach(mw -> {
+                                String key = (String) args[1];
+                                String value = (String) args[2];
+                                switch (key) {
+                                    case "allowflight" ->
+                                            mw.setAllowFlight(Boolean.parseBoolean(value));
+                                    case "autoheal" ->
+                                            mw.setAutoHeal(Boolean.parseBoolean(value));
+                                    case "hunger" ->
+                                            mw.setHunger(Boolean.parseBoolean(value));
+                                    case "alias" ->
+                                            mw.setAlias(value);
+                                }
+                                update();
+                                wm.saveWorldsConfig();
+                            });
                         } catch (Throwable e) {
                             e.printStackTrace();
                         }
@@ -210,11 +227,11 @@ final class Worlds {
             w.rules = Arrays.stream(it.getGameRules()).map(r -> new String[] { r, it.getGameRuleValue(r) })
                     .toArray(String[][]::new);
             if (mv != null) {
-                MultiverseWorld mw = ((MultiverseCore) mv).getMVWorldManager().getMVWorld(it);
+                MultiverseWorld mw = ((MultiverseCoreApi) mv).getWorldManager().getWorld(it).getOrNull();
                 w.alias = mw.getAlias();
-                w.allowFlight = mw.getAllowFlight();
+                w.allowFlight = mw.isAllowFlight();
                 w.autoHeal = mw.getAutoHeal();
-                w.hunger = mw.getHunger();
+                w.hunger = mw.isHunger();
             }
             return w;
         }).toArray());

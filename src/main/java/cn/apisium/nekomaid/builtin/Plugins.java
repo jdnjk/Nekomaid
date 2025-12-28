@@ -80,17 +80,17 @@ final class Plugins implements Listener {
                         String it = (String) args[0], name = it.replaceAll("\\.jar$", "");
                         Plugin pl = getPlugin(it);
                         if (pl == null) {
-                            if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().loadPlugin(new File(new File("plugins"), name + ".jar"));
-                            else if (HAS_PLUGMAN) PluginUtil.load(name);
+                            /*if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().loadPlugin(new File(new File("plugins"), name + ".jar"));
+                            else */if (HAS_PLUGMAN) PluginUtil.load(name);
                             else return false;
                             return pm.getPlugin((String) args[1]) != null;
                         } else if (pm.isPluginEnabled(pl)) {
-                            if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().unloadPlugin(pl);
-                            else if (HAS_PLUGMAN) PluginUtil.unload(pl);
+                            /*if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().unloadPlugin(pl);
+                            else */if (HAS_PLUGMAN) PluginUtil.unload(pl);
                             else pm.disablePlugin(pl);
                         } else {
-                            if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().enablePlugin(pl);
-                            else if (HAS_PLUGMAN) PluginUtil.load(name);
+                            /*if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().enablePlugin(pl);
+                            else */if (HAS_PLUGMAN) PluginUtil.load(name);
                             else pm.enablePlugin(pl);
                         }
                         refresh();
@@ -107,8 +107,8 @@ final class Plugins implements Listener {
                         if (it.endsWith(".jar")) {
                             Plugin pl = getPlugin(it);
                             if (pl != null) {
-                                if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().unloadPlugin(pl);
-                                else if (HAS_PLUGMAN) PluginUtil.unload(pl);
+                                /*if (HAS_SERVER_UTILS) ServerUtils.getInstance().getPlugin().getPluginManager().unloadPlugin(pl);
+                                else */if (HAS_PLUGMAN) PluginUtil.unload(pl);
                                 else return false;
                             }
                             Files.move(file, pluginsDir.resolve(it + ".disabled"));
